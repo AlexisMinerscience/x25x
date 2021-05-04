@@ -1,4 +1,3 @@
-
 #include "stratum.h"
 
 uint64_t lyra2z_height = 0;
@@ -27,10 +26,6 @@ void build_submit_values(YAAMP_JOB_VALUES *submitvalues, YAAMP_JOB_TEMPLATE *tem
 
 	string merkleroot = merkle_with_first(templ->txsteps, doublehash);
 	ser_string_be(merkleroot.c_str(), submitvalues->merkleroot_be, 8);
-	
-	if(templ->isbitcash) {
-		sprintf(submitvalues->coinbase, "%s%s%s%s", templ->coinforsubmitb1, nonce1, nonce2, templ->coinforsubmitb2);
-	}
 
 #ifdef MERKLE_DEBUGLOG
 	printf("merkle root %s\n", merkleroot.c_str());
@@ -43,14 +38,7 @@ void build_submit_values(YAAMP_JOB_VALUES *submitvalues, YAAMP_JOB_TEMPLATE *tem
 		sprintf(submitvalues->header, "%s%s%s%s%s%s%s", templ->version, templ->prevhash_be, submitvalues->merkleroot_be,
 			ntime, templ->nbits, nonce, templ->extradata_be);
 		ser_string_be(submitvalues->header, submitvalues->header_be, 36); // 80+64 / sizeof(u32)
-	} else if (templ->needpriceinfo)
-	{
-		sprintf(submitvalues->header, "%s%s%s%s%s%s", templ->version, templ->prevhash_be, submitvalues->merkleroot_be,
-			ntime, templ->nbits, nonce);
-		ser_string_be(submitvalues->header, submitvalues->header_be, 20);
-		sprintf(submitvalues->header_be, "%s%s", submitvalues->header_be, templ->priceinfo);
-	} else
-	{
+	} else {
 		sprintf(submitvalues->header, "%s%s%s%s%s%s", templ->version, templ->prevhash_be, submitvalues->merkleroot_be,
 			ntime, templ->nbits, nonce);
 		ser_string_be(submitvalues->header, submitvalues->header_be, 20);
@@ -354,8 +342,6 @@ static bool ntime_valid_range(const char ntimehex[])
 	uint32_t ntime = 0;
 	if (strlen(ntimehex) != 8) return false;
 	sscanf(ntimehex, "%8x", &ntime);
-	if (ntime < 0x5b000000 || ntime > 0x60000000) // 14 Jan 2021
-		return false;
 	time(&rawtime);
 	return (abs(rawtime - ntime) < (30 * 60));
 }
